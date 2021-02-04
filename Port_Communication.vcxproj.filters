@@ -16,6 +16,9 @@
     <Filter Include="src\ThirdParty\rs232">
       <UniqueIdentifier>{63a1088b-e9d3-475d-a8cb-a10347c334cb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\ThirdParty\spdlog">
+      <UniqueIdentifier>{4707dfe1-0c7e-4f9f-8220-3a7538f1451a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\mod\hvg\hvg_serial.hxx">
@@ -23,6 +26,9 @@
     </ClInclude>
     <ClInclude Include="src\ThirdParty\rs232\rs232.h">
       <Filter>src\ThirdParty\rs232</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ThirdParty\spdlog\spdlog.h">
+      <Filter>src\ThirdParty\spdlog</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

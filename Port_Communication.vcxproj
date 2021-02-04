@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="src\mod\hvg\hvg_serial.hxx" />
     <ClInclude Include="src\ThirdParty\rs232\rs232.h" />
+    <ClInclude Include="src\ThirdParty\spdlog\spdlog.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Port_Communication.cpp" />
@@ -101,7 +102,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>src\ThirdParty\rs232;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\ThirdParty;src\ThirdParty\rs232;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -117,7 +118,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <AdditionalIncludeDirectories>src\ThirdParty\rs232;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\ThirdParty;src\ThirdParty\rs232;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,7 +133,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>src\ThirdParty\rs232;src\mod\hvg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\ThirdParty;src\ThirdParty\rs232;src\mod\hvg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
@@ -148,7 +149,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>src\ThirdParty\rs232;src\mod\hvg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\ThirdParty;src\ThirdParty\rs232;src\mod\hvg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>

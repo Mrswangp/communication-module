@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include "rs232.h"
+#include"spdlog/spdlog.h"
 namespace mod::hvg::control {
 	constexpr size_t BUF_SIZE = 1024 * 4;
 	struct hvg_serial_t {
@@ -33,6 +34,7 @@ namespace mod::hvg::control {
 	int send(hvg_serial_t* p, char* buf, int len);
 	int recv(hvg_serial_t* p, char* buf, int len);
 	int get_line(hvg_serial_t* p, char* buf, int len, double timeout);
+	int get_line(hvg_serial_t* p, char* buf, int len);
 }
 
 #endif // _HVG_SERIAL_H_
@@ -60,10 +62,10 @@ namespace mod::hvg::control {
 			return false;
 		}
 		if (RS232_OpenComport(p->port, p->baud, p->mode)) { //Open port
-			printf("can not open server port %d!", p->port);
+			spdlog::error("can not open server port:{:d}", p->port);
 			return false;
 		}
-		printf("open the server comport %d!\n", p->port);
+		spdlog::info("open the server comport:{:d}", p->port);
 		return true;
 	}
 	bool close(hvg_serial_t* p)
@@ -72,22 +74,23 @@ namespace mod::hvg::control {
 			return false;
 		}
 		RS232_CloseComport(p->port);
-		printf("server port status is closed\n");
+		spdlog::info("server port status is closed");
 		return true;
 	}
 	int send(hvg_serial_t* p, char* buf, int len)
 	{
-		printf("send->port=%d\n", p->port);
+		//printf("send->port=%d\n", p->port);
+		spdlog::debug("send->port:{:d}", p->port);
 		if (p == nullptr) {
 			return -1;
 		}
 		if (*buf == 0) {
-			printf("No data need send!\n");
+			spdlog::info("No data need send!");
 			return 0;
 		}
 		strcat(buf, "\r\n");
 		int ret = RS232_SendBuf(p->port, (unsigned char*)buf, strlen(buf));
-		printf("send_data_number=%d\n", ret);
+		spdlog::debug("send_data_number:{:d}", ret);
 		return ret;
 	}
 	int recv(hvg_serial_t* p, char* buf, int len)
@@ -101,7 +104,7 @@ namespace mod::hvg::control {
 		while (1) {
 			RET = RS232_PollComport(p->port, (unsigned char*)ptr, BUF_SIZE);
 			if (RET > 0) {
-				printf("receive_buf=%s\n", p->buf);
+				spdlog::debug("receive_buf:{:s}", p->buf);
 			}
 			if (RET < 2) {
 				memcpy(buf, p->buf, RET);
@@ -120,7 +123,7 @@ namespace mod::hvg::control {
 		}
 		return 0;
 	}
-	int get_line(hvg_serial_t* p, char* buf, int len, double timeout)
+	int get_line(hvg_serial_t* p, char* buf, int len)
 	{
 		int RET = 0;
 		if (p == nullptr) {
@@ -130,18 +133,14 @@ namespace mod::hvg::control {
 		p->len = 0;
 		int i = 0;
 		int flag = 0;
-		printf("p->port=%d\n", p->port);
-		memset(p->buf, 0x00, BUF_SIZE);
-		clock_t start;
-		clock_t finish;
-		start = clock();
+		spdlog::debug("p->port:{:d}", p->port);
 		while (1) {
 			RET = RS232_PollComport(p->port, (unsigned char*)ptr + p->len, BUF_SIZE - p->len);
-			finish = clock();
 			if (RET > 0) {
-				printf("receive_buf=%s\n", p->buf);
+				p->buf[RET] = '\0';
+				spdlog::debug("receive_buf:{:s}", p->buf);
 				p->len = p->len + RET;
-				printf("length=%d,available space=%d\n", p->len, BUF_SIZE - p->len);
+				spdlog::debug("length:{:d};available space:{:d}", p->len, BUF_SIZE - p->len);
 				while (i < p->len) {
 					if (p->buf[i] == '\n' && p->buf[i - 1] == '\r') {
 						memcpy(buf, p->buf, i + 1);
@@ -154,14 +153,60 @@ namespace mod::hvg::control {
 					}
 					else {
 						i++;
-						printf("i=%d\n", i);
+						spdlog::debug("i:{:d}", i);
 					}
 				}
 				if (flag == 1)
 					break;
-				if (timeout == (double)(finish - start) / CLOCKS_PER_SEC)
+			}
+		}
+		return 0;
+	}
+	int get_line(hvg_serial_t* p, char* buf, int len, double timeout)
+	{
+		printf("timeout is %f", timeout);
+		int RET = 0;
+		if (p == nullptr) {
+			return -1;
+		}
+		char* ptr = p->buf;
+		p->len = 0;
+		int i = 0;
+		int flag = 0;
+		spdlog::debug("p->port:{:d}", p->port);
+		clock_t start;
+		clock_t finish;
+		double run_time;
+		start = clock();
+		while (1) {
+			RET = RS232_PollComport(p->port, (unsigned char*)ptr + p->len, BUF_SIZE - p->len);
+			finish = clock();
+			run_time = (double)(finish - start) / CLOCKS_PER_SEC;
+			if (RET > 0) {
+				p->buf[RET] = '\0';
+				spdlog::debug("receive_buf:{:s}", p->buf);
+				p->len = p->len + RET;
+				spdlog::debug("length:{:d};available space:{:d}", p->len, BUF_SIZE - p->len);
+				while (i < p->len) {
+					if (p->buf[i] == '\n' && p->buf[i - 1] == '\r') {
+						memcpy(buf, p->buf, i + 1);
+						strcat(buf, "\0");
+						memmove(p->buf, p->buf + i, p->len - i);
+						p->len = p->len - i;
+						i = 0;
+						flag = 1;
+						break;
+					}
+					else {
+						i++;
+						spdlog::debug("i:{:d}", i);
+					}
+				}
+				if (flag == 1)
 					break;
 			}
+			if (run_time >= timeout)
+				break;
 		}
 		return 0;
 	}

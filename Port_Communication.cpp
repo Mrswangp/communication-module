@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #define HVG_SERIAL_IMPLEMENTATION
 #include"hvg_serial.hxx"
+#include"spdlog/spdlog.h"
 int main()
 {  //init 
 	mod::hvg::control::hvg_serial_t* p = (mod::hvg::control::hvg_serial_t*)malloc(sizeof(mod::hvg::control::hvg_serial_t));
@@ -9,39 +10,39 @@ int main()
 	char mode[] = { '8','N','2',0 };
 	bool ret = mod::hvg::control::init(p, port, bdrate, mode);
 	if (ret == false) {
-		printf("init failed!\n");
+		spdlog::error("init failed!\n");
 		return -1;
 	}
-	printf("init successfully!\n");
+	spdlog::set_level(spdlog::level::debug); // Set global log level to debug
+	spdlog::debug("init successfully!");
 	//open port
 	ret = mod::hvg::control::open(p);
 	if (ret == false) {
-		printf("open port failed\n");
+		spdlog::error("open port failed\n");
 		return -1;
 	}
-	printf("open port successfully\n");
-	printf("please input your command that you want to send:\n");
+	spdlog::debug("open port successfully!");
+	spdlog::info("please input your command that you want to send:");
 	char send_buff[50] = {};
 	char recv_buff[1024] = {};
 	double timeout;
 	scanf("%s", send_buff);
 	while (getchar() != '\n');
 	int res = mod::hvg::control::send(p, send_buff, 50);
-	printf("actually send_byte=%d\n", res);
-	printf("recv....\n");
-	printf("please input receive time limit seconds:\n");
+	spdlog::debug("actually send_byte:{:d}", res);
+	spdlog::debug("recv...");
+	spdlog::info("please input receive time limit seconds");
+	printf("please input receive time limit seconds\n");
 	scanf("%lf", &timeout);
 	mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
-	printf("complete command is%s\n", recv_buff);
-	//memset(recv_buff, 0x00, 1024);
-	//mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
-	//printf("complete command is%s\n", recv_buff);
+	/*spdlog::debug("complete command is:{:s}", recv_buff);
+	spdlog::debug("p->buf is :{:s}", p->buf);*/
 	ret = mod::hvg::control::close(p);
 	if (ret == false) {
-		printf("close port failed\n");
+		spdlog::error("close port failed");
 		return -1;
 	}
-	printf("close port successfully\n");
+	spdlog::info("close port successfully\n");
 	free(p);
 	return 0;
 }
