@@ -27,7 +27,7 @@ namespace mod::hvg::control {
 		process_data_f process_data;
 	};
 
-	bool init(hvg_serial_t* p, int port, int baud, const char* mode);
+	bool init(hvg_serial_t* p, int port, int baud, const char* mode, int len);
 	void drop(hvg_serial_t* p);
 	bool open(hvg_serial_t* p);
 	bool close(hvg_serial_t* p);
@@ -102,24 +102,24 @@ namespace mod::hvg::control {
 		}
 		char* ptr = p->buf;
 		n = RS232_PollComport(p->port, (unsigned char*)ptr + p->len, BUF_SIZE);
-		if (n > 0) {
-			spdlog::debug("receive_buf:{:s}", p->buf);
-		}
+		p->len = p->len + n;
+		p->buf[p->len] = '\0';
+		printf("n=%d\n", n);
+		spdlog::debug("receive_buf:{:s}", p->buf);
 		if (n < 2) {
 			memcpy(buf, p->buf, n);
-			p->len = p->len + n;
 			return n;
 		}
-		if (p->buf[n - 1] != '\n' && p->buf[n - 2] != '\r') {
+		else if (p->buf[n - 1] == '\n' && p->buf[n - 2] == '\r') {
 			memcpy(buf, p->buf, n);
-			p->len = p->len + n;
 			return n;
 		}
-		for (int i = 0; i < n; i++) {
-			if (p->buf[i] != '\n' && p->buf[i - 1] != '\r') {
-				memcpy(buf, p->buf, i);
-				p->len = p->len + n;
-				return i;
+		else {
+			for (int i = 0; i < n; i++) {
+				if (p->buf[i] == '\n' && p->buf[i - 1] == '\r') {
+					memcpy(buf, p->buf, i + 1);
+					return i + 1;
+				}
 			}
 		}
 		return 0;
@@ -146,8 +146,9 @@ namespace mod::hvg::control {
 				if (p->buf[i] == '\n' && p->buf[i - 1] == '\r') {
 					memcpy(buf, p->buf, i + 1);
 					strcat(buf, "\0");
-					memmove(p->buf, p->buf + i, p->len - i);
-					p->len = p->len - i;
+					memmove(p->buf, p->buf + i + 1, p->len - i - 1);
+					p->len = p->len - i - 1;
+					p->buf[p->len] = '\0';
 					return i + 1;
 				}
 				else {
@@ -160,7 +161,6 @@ namespace mod::hvg::control {
 	}
 	int get_line(hvg_serial_t* p, char* buf, int len, double timeout)
 	{
-		printf("timeout is %f", timeout);
 		int n = 0;
 		if (p == nullptr) {
 			return -1;
@@ -191,8 +191,10 @@ namespace mod::hvg::control {
 				if (p->buf[i] == '\n' && p->buf[i - 1] == '\r') {
 					memcpy(buf, p->buf, i + 1);
 					strcat(buf, "\0");
-					memmove(p->buf, p->buf + i, p->len - i);
-					p->len = p->len - i;
+					memmove(p->buf, p->buf + i + 1, p->len - i - 1);
+					/*memset(p->buf + p->len - i - 1, 0x00, i + 1);*/
+					p->len = p->len - i - 1;
+					p->buf[p->len] = '\0';
 					return i + 1;
 				}
 				else {

@@ -35,9 +35,10 @@ int main()
 	spdlog::info("please input receive time limit seconds");
 	printf("please input receive time limit seconds\n");
 	scanf("%lf", &timeout);
-	mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
-	/*spdlog::debug("complete command is:{:s}", recv_buff);
-	spdlog::debug("p->buf is :{:s}", p->buf);*/
+	//mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
+	mod::hvg::control::recv(p, recv_buff, 1024);
+	spdlog::debug("complete command is:{:s}", recv_buff);
+	spdlog::debug("p->buf is :{:s}", p->buf);
 	ret = mod::hvg::control::close(p);
 	if (ret == false) {
 		spdlog::error("close port failed");
