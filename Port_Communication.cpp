@@ -5,10 +5,11 @@
 int main()
 {  //init 
 	mod::hvg::control::hvg_serial_t* p = (mod::hvg::control::hvg_serial_t*)malloc(sizeof(mod::hvg::control::hvg_serial_t));
+	int len = 0;
 	int port = 2;
 	int bdrate = 9600;
 	char mode[] = { '8','N','2',0 };
-	bool ret = mod::hvg::control::init(p, port, bdrate, mode);
+	bool ret = mod::hvg::control::init(p, port, bdrate, mode, len);
 	if (ret == false) {
 		spdlog::error("init failed!\n");
 		return -1;
