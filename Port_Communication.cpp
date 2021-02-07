@@ -21,24 +21,27 @@ int main()
 		spdlog::error("open port failed\n");
 		return -1;
 	}
-	spdlog::debug("open port successfully!");
-	spdlog::info("please input your command that you want to send:");
-	char send_buff[50] = {};
-	char recv_buff[1024] = {};
+	//spdlog::debug("open port successfully!");
 	double timeout;
-	scanf("%s", send_buff);
-	while (getchar() != '\n');
-	int res = mod::hvg::control::send(p, send_buff, 50);
-	spdlog::debug("actually send_byte:{:d}", res);
-	spdlog::debug("recv...");
 	spdlog::info("please input receive time limit seconds");
-	printf("please input receive time limit seconds\n");
 	scanf("%lf", &timeout);
-	//mod::hvg::control::get_line(p, recv_buff, 1024);
-	//mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
-	mod::hvg::control::recv(p, recv_buff, 1024);
-	spdlog::debug("complete command is:{:s}", recv_buff);
-	spdlog::debug("p->buf is :{:s}", p->buf);
+	while (1) {
+		spdlog::info("please input your command that you want to send:");
+		char send_buff[50] = {};
+		char recv_buff[1024] = {};
+		scanf("%s", send_buff);
+		while (getchar() != '\n');
+		int res = mod::hvg::control::send(p, send_buff, 50);
+		spdlog::debug("actually send_byte:{:d}", res);
+		spdlog::debug("recv...");
+		mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
+		//mod::hvg::control::recv(p, recv_buff, 1024);
+		spdlog::debug("complete command is:{:s}", recv_buff);
+		spdlog::debug("p->buf is :{:s}", p->buf);
+		/*	mod::hvg::control::get_line(p, recv_buff, 1024);
+			spdlog::debug("complete command is:{:s}", recv_buff);
+			spdlog::debug("p->buf is :{:s}", p->buf);*/
+	}
 	ret = mod::hvg::control::close(p);
 	if (ret == false) {
 		spdlog::error("close port failed");
