@@ -88,10 +88,9 @@ namespace mod::hvg::control {
 		}
 		strcat(buf, "\r\n");
 		int ret = RS232_SendBuf(p->port, (unsigned char*)buf, strlen(buf));
-		//spdlog::debug("send_data_number:{:d}", ret);
 		return ret;
 	}
-	int feedback(char result)
+	static int feedback(char result)
 	{
 		unsigned char feedback_res[10] = {};
 		feedback_res[0] = result;
@@ -99,7 +98,7 @@ namespace mod::hvg::control {
 		//spdlog::debug("send feedback byte:{:d}", ret);
 		return 0;
 	}
-	void judge_result(char* out)
+	static void judge_result(char* out)
 	{
 		char test1_end_result[] = "vbn123\r\n";
 		char test2_end_result[] = ">ase34 \r\n";
@@ -115,17 +114,15 @@ namespace mod::hvg::control {
 		}
 
 	}
-	static int scan_data(char* start, int* len, char* out)
+	static int scan_data(char* start, int len, char* out)
 	{
 		int i = 0;
-		spdlog::debug("length:{:d};available space:{:d}", start, BUF_SIZE - *len);
-		while (i < *len) {
+		spdlog::debug("length:{:d};available space:{:d}", start, BUF_SIZE - len);
+		while (i < len) {
 			if (start[i] == '\r' && start[i + 1] == '\n') {
 				memcpy(out, start, i + 2);
-				judge_result(out);
-				memmove(start, start + i + 2, *len - i - 2);
-				*len = *len - i - 2;
-				spdlog::debug("len:{:d}", *len);
+				//judge_result(out);
+				memmove(start, start + i + 2, len - i - 2);
 				return i + 2;
 			}
 			i++;
@@ -140,19 +137,15 @@ namespace mod::hvg::control {
 		}
 		char* ptr = p->buf;
 		int n = RS232_PollComport(p->port, (unsigned char*)ptr + p->len, BUF_SIZE - p->len);
-		/*if (n == 0) {
-			return -1;
-		}*/
 		p->len = p->len + n;
 		p->buf[p->len] = '\0';
 		//spdlog::debug("receive_buf:{:s}", p->buf);
-		n = scan_data(p->buf, &(p->len), buf);
+		n = scan_data(p->buf, p->len, buf);
 		//spdlog::debug("p->len:{:d}", p->len);
 		if (n > 0) {
-			//feedback(1, p->port);
+			p->len = p->len - n;
 			return n;
 		}
-		//feedback(-1, p->port);
 		return 0;
 	}
 	//static bool is_stop(char* p, char* stop_chars)
@@ -166,14 +159,13 @@ namespace mod::hvg::control {
 		}
 		char* ptr = p->buf;
 		int i = 0;
-		//	spdlog::debug("p->port:{:d}", p->port);
 		while (1) {
 			int n = RS232_PollComport(p->port, (unsigned char*)ptr + p->len, BUF_SIZE - p->len);
 			p->len = p->len + n;
 			p->buf[p->len] = '\0';
-			n = scan_data(p->buf, &(p->len), buf);
+			n = scan_data(p->buf, p->len, buf);
 			if (n > 0) {
-				//feedback(1, p->port);
+				p->len = p->len - n;
 				return n;
 			}
 		}
@@ -186,7 +178,6 @@ namespace mod::hvg::control {
 		}
 		char* ptr = p->buf;
 		int i = 0;
-		//spdlog::debug("p->port:{:d}", p->port);
 		clock_t start;
 		clock_t finish;
 		double run_time = 0;
@@ -199,14 +190,13 @@ namespace mod::hvg::control {
 			p->len = p->len + n;
 			p->buf[p->len] = '\0';
 			//spdlog::debug("receive_buf:{:s}", p->buf);
-			n = scan_data(p->buf, &(p->len), buf);
+			n = scan_data(p->buf, p->len, buf);
 			//spdlog::debug("p->len:{:d}", p->len);
 			if (n > 0) {
-				//feedback(1, p->port);
+				p->len = p->len - n;
 				return n;
 			}
 		}
-		//feedback(-1, p->port);
 		return 0;
 	}
 }
