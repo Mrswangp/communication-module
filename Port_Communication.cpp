@@ -39,9 +39,10 @@ int main()
 		{
 			char recv_buff[1024] = {};
 			//std::thread first(mod::hvg::control::get_line1, p, recv_buff, 1024, timeout);
-			mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
+			//mod::hvg::control::get_line(p, recv_buff, 1024, timeout);
+			mod::hvg::control::get_line(p, recv_buff, 1024);
 			printf("complete command is%s\n", recv_buff);
-			printf("recv_buff length is ->%d\n", strlen(recv_buff));
+			//printf("recv_buff length is ->%d\n", strlen(recv_buff));
 			if (strlen(recv_buff) == 0) {
 				break;
 			}
