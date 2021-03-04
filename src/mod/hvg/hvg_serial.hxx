@@ -48,7 +48,7 @@ namespace mod::hvg::control {
 		p->len = 0;
 		p->port = port;
 		p->baud = baud;
-		strncpy(p->mode, mode, 4);
+		strcpy(p->mode, mode);
 		return true;
 	}
 	void drop(hvg_serial_t* p)
@@ -86,8 +86,10 @@ namespace mod::hvg::control {
 			spdlog::info("No data need send!");
 			return 0;
 		}
+		printf("actually receive length is %d\n", len);
 		strcat(buf, "\r\n");
-		int ret = RS232_SendBuf(p->port, (unsigned char*)buf, strlen(buf));
+		int ret = RS232_SendBuf(p->port, (unsigned char*)buf, len+2);
+		printf("actually send_byte:%d", ret);
 		return ret;
 	}
 	static int feedback(char result)
@@ -117,7 +119,7 @@ namespace mod::hvg::control {
 	static int scan_data(char* start, int len, char* out)
 	{
 		int i = 0;
-		spdlog::debug("length:{:d};available space:{:d}", start, BUF_SIZE - len);
+		spdlog::debug("length:{:d};available space:{:d}", len, BUF_SIZE - len);
 		while (i < len) {
 			if (start[i] == '\r' && start[i + 1] == '\n') {
 				memcpy(out, start, i + 2);
@@ -186,10 +188,10 @@ namespace mod::hvg::control {
 			finish = clock();
 			run_time = ((double)(finish - start) / CLOCKS_PER_SEC) * 1000.0;
 			//spdlog::debug("run_time:{:f}", run_time);
-			int n = RS232_PollComport(p->port, (unsigned char*)ptr + p->len, BUF_SIZE - p->len);
+			int n = RS232_PollComport(p->port, (unsigned char*)p->buf+ p->len, BUF_SIZE - p->len);
 			p->len = p->len + n;
 			p->buf[p->len] = '\0';
-			//spdlog::debug("receive_buf:{:s}", p->buf);
+			spdlog::debug("receive_buf:{:s}", p->buf);
 			n = scan_data(p->buf, p->len, buf);
 			//spdlog::debug("p->len:{:d}", p->len);
 			if (n > 0) {
